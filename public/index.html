@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PulseChat | Distributed Real-Time Messaging</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div class="bg-grid"></div>
+  <main class="app-shell">
+    <section class="hero-panel">
+      <div class="brand">PulseChat</div>
+      <h1>Realtime chat built to scale.</h1>
+      <p>
+        Multi-room chat with persistence, live presence, and distributed Socket.io sync. Perfect for showing systems thinking in interviews.
+      </p>
+      <form id="joinForm" class="join-form">
+        <label>
+          Username
+          <input id="usernameInput" type="text" maxlength="32" placeholder="e.g. Priya" required />
+        </label>
+        <label>
+          Room
+          <input id="roomInput" type="text" maxlength="48" placeholder="e.g. general" value="general" required />
+        </label>
+        <button type="submit">Launch Chat</button>
+      </form>
+      <div id="serverStatus" class="status-chip">Server: connecting...</div>
+    </section>
+
+    <section class="chat-panel hidden" id="chatPanel">
+      <header class="chat-header">
+        <div>
+          <h2 id="activeRoomLabel"># room</h2>
+          <p id="activeUserLabel">Disconnected</p>
+        </div>
+        <div class="header-actions">
+          <button id="refreshHistoryBtn" type="button">Refresh History</button>
+          <button id="disconnectBtn" type="button">Disconnect</button>
+        </div>
+      </header>
+
+      <div class="chat-layout">
+        <aside class="sidebar">
+          <section>
+            <h3>Active Room Members</h3>
+            <ul id="memberList" class="pill-list"></ul>
+          </section>
+          <section>
+            <h3>Recent Rooms</h3>
+            <ul id="recentRooms" class="pill-list"></ul>
+          </section>
+          <section>
+            <h3>Runtime</h3>
+            <div id="runtimeMeta" class="meta-box">Loading runtime status...</div>
+          </section>
+        </aside>
+
+        <section class="conversation">
+          <div id="messageList" class="message-list"></div>
+          <div id="typingHint" class="typing-hint"></div>
+          <form id="messageForm" class="message-form">
+            <textarea id="messageInput" maxlength="2000" placeholder="Write a message..." rows="2"></textarea>
+            <button type="submit">Send</button>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script src="./app.js"></script>
+</body>
+
+</html>
