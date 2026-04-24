@@ -1,0 +1,65 @@
+services:
+  - type: redis
+    name: pulsechat-redis
+    plan: free
+    maxmemoryPolicy: noeviction
+
+  - type: web
+    name: pulsechat-web
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SOCKET_CORS
+        sync: false
+      - key: INSTANCE_ID
+        generateValue: true
+      - key: DB_HOST
+        fromDatabase:
+          name: pulsechat-postgres
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: pulsechat-postgres
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: pulsechat-postgres
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: pulsechat-postgres
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: pulsechat-postgres
+          property: password
+      - key: REDIS_HOST
+        fromService:
+          type: redis
+          name: pulsechat-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: redis
+          name: pulsechat-redis
+          property: port
+      - key: REDIS_PASSWORD
+        fromService:
+          type: redis
+          name: pulsechat-redis
+          property: password
+
+databases:
+  - name: pulsechat-postgres
+    databaseName: chat_system
+    user: chat_system_user
+    plan: free

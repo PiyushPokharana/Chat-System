@@ -197,14 +197,14 @@ Increase reliability under real-world failures.
 Make architecture interview-ready.
 
 ### README Topics
-- [ ] Sticky sessions vs stateless design
-- [ ] Horizontal scaling strategy
-- [ ] Message ordering challenges and trade-offs
-- [ ] Failure handling and recovery path
-- [ ] Why Redis Pub/Sub is used in this design
+- [x] Sticky sessions vs stateless design
+- [x] Horizontal scaling strategy
+- [x] Message ordering challenges and trade-offs
+- [x] Failure handling and recovery path
+- [x] Why Redis Pub/Sub is used in this design
 
 ### Exit Criteria
-- [ ] README clearly explains scale architecture decisions
+- [x] README clearly explains scale architecture decisions
 
 ---
 
