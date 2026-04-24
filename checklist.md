@@ -144,14 +144,14 @@ Make chat work across multiple backend instances.
 Handle disconnected users without losing messages.
 
 ### Checkpoints
-- [ ] Track active users (for example, Redis set)
-- [ ] Mark user status on connect/disconnect
-- [ ] Store pending messages for offline users
-- [ ] Deliver pending messages on reconnect
-- [ ] Clear delivered pending queue safely
+- [x] Track active users (for example, Redis set)
+- [x] Mark user status on connect/disconnect
+- [x] Store pending messages for offline users
+- [x] Deliver pending messages on reconnect
+- [x] Clear delivered pending queue safely
 
 ### Exit Criteria
-- [ ] Offline users receive missed messages after reconnect
+- [x] Offline users receive missed messages after reconnect
 
 ---
 
@@ -161,13 +161,13 @@ Handle disconnected users without losing messages.
 Improve user experience.
 
 ### Checkpoints
-- [ ] Add typing_start event
-- [ ] Add typing_stop event
-- [ ] Broadcast typing status in room
-- [ ] Auto-clear indicator on timeout/disconnect
+- [x] Add typing_start event
+- [x] Add typing_stop event
+- [x] Broadcast typing status in room
+- [x] Auto-clear indicator on timeout/disconnect
 
 ### Exit Criteria
-- [ ] UI shows "user is typing" correctly
+- [x] UI shows "user is typing" correctly
 
 ---
 
@@ -177,17 +177,17 @@ Improve user experience.
 Increase reliability under real-world failures.
 
 ### Checkpoints
-- [ ] Add message acknowledgement from client
-- [ ] Mark delivery state (sent, delivered, failed)
-- [ ] Implement retry when ack not received
-- [ ] Set retry limits/backoff policy
-- [ ] Ensure idempotent handling for duplicate retries
+- [x] Add message acknowledgement from client
+- [x] Mark delivery state (sent, delivered, failed)
+- [x] Implement retry when ack not received
+- [x] Set retry limits/backoff policy
+- [x] Ensure idempotent handling for duplicate retries
 
 ### Concept Validation
-- [ ] At-least-once delivery behavior is demonstrated
+- [x] At-least-once delivery behavior is demonstrated
 
 ### Exit Criteria
-- [ ] Messaging remains reliable under packet loss/reconnect scenarios
+- [x] Messaging remains reliable under packet loss/reconnect scenarios
 
 ---
 

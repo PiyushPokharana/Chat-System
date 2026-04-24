@@ -103,6 +103,19 @@ class UserService {
     getUsersByRoom(roomId) {
         return this.getActiveUserList().filter((user) => user.currentRoomId === roomId);
     }
+
+    getConnectedUsersByRoom(roomId) {
+        return Array.from(this.users.values()).filter((user) => user.currentRoomId === roomId);
+    }
+
+    getUserByUserId(userId) {
+        for (const user of this.users.values()) {
+            if (user.userId === userId) {
+                return user;
+            }
+        }
+        return null;
+    }
 }
 
 module.exports = new UserService();

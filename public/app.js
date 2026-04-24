@@ -4,6 +4,8 @@
   currentRoom: null,
   typingTimeout: null,
   members: [],
+  typingUsers: [],
+  seenMessageIds: new Set(),
 };
 
 const els = {
@@ -82,6 +84,8 @@ function connectSocket(username, initialRoom) {
   socket.on('disconnect', () => {
     els.serverStatus.textContent = 'Server: disconnected';
     els.activeUserLabel.textContent = 'Disconnected';
+    state.typingUsers = [];
+    renderTypingHint();
   });
 
   socket.on('error_message', (payload) => {
@@ -90,6 +94,8 @@ function connectSocket(username, initialRoom) {
 
   socket.on('room_joined', ({ roomId }) => {
     state.currentRoom = roomId;
+    state.typingUsers = [];
+    renderTypingHint();
     els.activeRoomLabel.textContent = `# ${roomId}`;
     els.activeUserLabel.textContent = `Signed in as ${state.currentUser?.username || 'Unknown'}`;
     clearMessages();
@@ -103,15 +109,39 @@ function connectSocket(username, initialRoom) {
       return;
     }
     clearMessages();
-    messages.forEach((msg) => addMessage(msg));
+    messages.forEach((msg) => handleIncomingMessage(msg));
     addSystemNote(`Loaded ${messages.length} historical messages`);
   });
 
-  socket.on('receive_message', (message) => {
-    if (message.roomId !== state.currentRoom) {
-      return;
+  socket.on('pending_messages', (payload, ack) => {
+    const pending = payload?.messages || [];
+    if (pending.length > 0) {
+      addSystemNote(`Recovered ${pending.length} missed messages after reconnect`);
+      pending.forEach((msg) => {
+        if (!state.currentRoom || msg.roomId === state.currentRoom) {
+          handleIncomingMessage(msg);
+        } else {
+          addSystemNote(`Missed message in #${msg.roomId} from ${msg.senderName}`);
+        }
+      });
     }
-    addMessage(message);
+
+    if (typeof ack === 'function') {
+      ack({ ok: true, deliveryId: payload?.deliveryId || null });
+    }
+  });
+
+  socket.on('receive_message', (message) => {
+    handleIncomingMessage(message);
+  });
+
+  socket.on('deliver_message', (payload, ack) => {
+    if (payload?.message) {
+      handleIncomingMessage(payload.message);
+    }
+    if (typeof ack === 'function') {
+      ack({ ok: true, deliveryId: payload?.deliveryId || null });
+    }
   });
 
   socket.on('room_members', ({ roomId, members }) => {
@@ -122,16 +152,17 @@ function connectSocket(username, initialRoom) {
     renderMembers();
   });
 
-  socket.on('user_typing', ({ roomId, username: typingUser }) => {
-    if (roomId === state.currentRoom && typingUser !== state.currentUser?.username) {
-      els.typingHint.textContent = `${typingUser} is typing...`;
+  socket.on('typing_status', ({ roomId, users }) => {
+    if (roomId !== state.currentRoom) {
+      return;
     }
+    state.typingUsers = (users || []).filter((u) => u.userId !== state.currentUser?.userId);
+    renderTypingHint();
   });
 
-  socket.on('user_stopped_typing', ({ roomId }) => {
-    if (roomId === state.currentRoom) {
-      els.typingHint.textContent = '';
-    }
+  socket.on('message_delivery_update', ({ messageId, recipientId, status, attempts, error }) => {
+    const details = `Delivery: msg=${messageId} recipient=${recipientId} status=${status} attempts=${attempts}`;
+    addSystemNote(error ? `${details} error=${error}` : details);
   });
 }
 
@@ -159,14 +190,23 @@ function onMessageSubmit(event) {
     return;
   }
 
-  state.socket.emit('send_message', { message: content, roomId: state.currentRoom }, (response) => {
+  const clientMessageId = generateClientMessageId();
+  state.socket.emit('send_message', {
+    message: content,
+    roomId: state.currentRoom,
+    clientMessageId,
+  }, (response) => {
     if (!response?.ok) {
       toast(response?.error || 'Message failed');
+      return;
+    }
+    if (response.duplicate) {
+      addSystemNote(`Deduped resend for message ${response.messageId}`);
     }
   });
 
   els.messageInput.value = '';
-  state.socket.emit('stop_typing');
+  state.socket.emit('typing_stop');
   clearTimeout(state.typingTimeout);
 }
 
@@ -175,11 +215,11 @@ function onTypingInput() {
     return;
   }
 
-  state.socket.emit('typing');
+  state.socket.emit('typing_start');
   clearTimeout(state.typingTimeout);
   state.typingTimeout = setTimeout(() => {
     if (state.socket) {
-      state.socket.emit('stop_typing');
+      state.socket.emit('typing_stop');
     }
   }, 1400);
 }
@@ -198,7 +238,9 @@ function disconnectSocket() {
     state.socket = null;
     state.currentRoom = null;
     state.members = [];
+    state.typingUsers = [];
     renderMembers();
+    renderTypingHint();
     addSystemNote('Disconnected from server');
   }
 }
@@ -222,6 +264,19 @@ function addMessage(message) {
   els.messageList.scrollTop = els.messageList.scrollHeight;
 }
 
+function handleIncomingMessage(message) {
+  if (!message || message.roomId !== state.currentRoom) {
+    return;
+  }
+  if (message.messageId && state.seenMessageIds.has(message.messageId)) {
+    return;
+  }
+  if (message.messageId) {
+    state.seenMessageIds.add(message.messageId);
+  }
+  addMessage(message);
+}
+
 function addSystemNote(text) {
   const note = document.createElement('div');
   note.className = 'system-note';
@@ -232,6 +287,7 @@ function addSystemNote(text) {
 
 function clearMessages() {
   els.messageList.innerHTML = '';
+  state.seenMessageIds = new Set();
 }
 
 function renderMembers() {
@@ -289,6 +345,9 @@ async function refreshServerMeta() {
       `connections: ${payload.socketConnections}`,
       `store: ${payload.messageStore.storageMode}`,
       `sync: ${payload.socketSync.enabled ? 'redis-on' : 'redis-off'}`,
+      `delivery.sent: ${payload.delivery?.sent ?? 0}`,
+      `delivery.delivered: ${payload.delivery?.delivered ?? 0}`,
+      `delivery.failed: ${payload.delivery?.failed ?? 0}`,
     ].join('\n');
   } catch (error) {
     els.runtimeMeta.textContent = 'Runtime status unavailable';
@@ -297,4 +356,28 @@ async function refreshServerMeta() {
 
 function toast(text) {
   addSystemNote(text);
+}
+
+function renderTypingHint() {
+  if (!state.typingUsers.length) {
+    els.typingHint.textContent = '';
+    return;
+  }
+
+  const names = state.typingUsers.map((u) => u.username);
+  if (names.length === 1) {
+    els.typingHint.textContent = `${names[0]} is typing...`;
+    return;
+  }
+
+  if (names.length === 2) {
+    els.typingHint.textContent = `${names[0]} and ${names[1]} are typing...`;
+    return;
+  }
+
+  els.typingHint.textContent = `${names[0]} and ${names.length - 1} others are typing...`;
+}
+
+function generateClientMessageId() {
+  return `cm_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
 }

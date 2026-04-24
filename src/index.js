@@ -7,6 +7,8 @@ const config = require('./config/environment');
 const { initializeSocket } = require('./sockets/socketHandler');
 const messageService = require('./services/messageService');
 const socketSyncService = require('./services/socketSyncService');
+const presenceService = require('./services/presenceService');
+const deliveryService = require('./services/deliveryService');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -43,6 +45,8 @@ app.get('/api/status', (req, res) => {
         socketConnections: io.engine.clientsCount,
         messageStore: messageService.getStatus(),
         socketSync: socketSyncService.getStatus(),
+        presence: presenceService.getStatus(),
+        delivery: deliveryService.getStatus(),
     });
 });
 

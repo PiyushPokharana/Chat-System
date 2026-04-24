@@ -27,7 +27,7 @@ Thanks for contributing to PulseChat.
 
 ## Validation before PR
 
-Run:
+Run core smoke tests:
 
 ```bash
 npm run phase1:smoke
@@ -39,4 +39,12 @@ If Redis is available locally, also run:
 
 ```bash
 npm run phase4:smoke
+```
+
+For presence, typing, and delivery features:
+
+```bash
+npm run phase5:smoke
+npm run phase6:smoke
+npm run phase7:smoke
 ```

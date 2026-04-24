@@ -13,6 +13,9 @@
 - [ ] `npm run phase1:smoke`
 - [ ] `npm run phase2:smoke`
 - [ ] `npm run phase3:smoke`
+- [ ] `npm run phase5:smoke` (if presence changes)
+- [ ] `npm run phase6:smoke` (if typing changes)
+- [ ] `npm run phase7:smoke` (if delivery changes)
 
 ## Notes
 - Known limitations:

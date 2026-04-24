@@ -28,6 +28,12 @@ jobs:
         run: |
           node --check src/index.js
           node --check src/sockets/socketHandler.js
+          node --check src/services/userService.js
+          node --check src/services/messageService.js
+          node --check src/services/presenceService.js
+          node --check src/services/deliveryService.js
+          node --check src/services/socketSyncService.js
+          node --check src/services/rateLimiterService.js
           node --check public/app.js
 
       - name: Smoke tests

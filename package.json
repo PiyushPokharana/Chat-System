@@ -1,6 +1,6 @@
 {
     "name": "chat-system",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "description": "Scalable real-time chat system with WebSocket support",
     "main": "src/index.js",
     "scripts": {
@@ -10,7 +10,10 @@
         "phase1:smoke": "node scripts/phase1-smoke.js",
         "phase2:smoke": "node scripts/phase2-smoke.js",
         "phase3:smoke": "node scripts/phase3-smoke.js",
-        "phase4:smoke": "node scripts/phase4-smoke.js"
+        "phase4:smoke": "node scripts/phase4-smoke.js",
+        "phase5:smoke": "node scripts/phase5-smoke.js",
+        "phase6:smoke": "node scripts/phase6-smoke.js",
+        "phase7:smoke": "node scripts/phase7-smoke.js"
     },
     "keywords": [
         "chat",
